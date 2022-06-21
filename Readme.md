@@ -8,7 +8,7 @@ This is a tool to monitor/estimate latency to various people in an Elden Ring ga
 
 I was having consistently bad connections at specific times of day (approximately 18:30-22:30, every day). I assumed that I was suddenly hitting players from a different region, and that was the cause of poor connections and opponents suddenly loving the Miyazaki shuffle. Eventually, I found that the same opponent would have a good connection prior to "The Witching Hour", and an awful one during. Because From Software games use peer to peer multiplayer, we can get the IP address (and therefore very approximate location) of other players in the session. Based on their IP address, sometimes we can ping them. Other times we can use the pings of other players we've seen in similar locations and use that to estimate pings.
 
-I also decided to display an estimate of outgoing packet loss - this isn't a real estimate of packet loss, it's just the number of times an identical packet has been re-sent<sup>1<sup>. In Elden Ring, "normal" packet loss is sub-15%. In Dark Souls 3, it is sub-10%. I didn't find a strong link between the reported packet loss and connection quality until the packet loss is significantly higher than those values (over the course of a multiplayer session). 
+I also decided to display an estimate of outgoing packet loss - this isn't a real estimate of packet loss, it's just the number of times an identical packet has been re-sent<sup>1</sup>. In Elden Ring, "normal" packet loss is sub-15%. In Dark Souls 3, it is sub-10%. I didn't find a strong link between the reported packet loss and connection quality until the packet loss is significantly higher than those values (over the course of a multiplayer session). 
 
 ## Usage
 
