@@ -1,5 +1,7 @@
 ip_cache*.json
 !ip_cache_example.json
+config.json
+!config_example.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

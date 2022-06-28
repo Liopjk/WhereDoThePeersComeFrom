@@ -1,0 +1,6 @@
+{
+    "address": "10.0.0.50",
+    "cachepath": "./ip_cache.json",
+    "router_address": "10.0.0.1",
+    "ipinfo_token": "abc123"
+}
