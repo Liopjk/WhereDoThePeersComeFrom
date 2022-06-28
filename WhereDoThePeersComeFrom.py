@@ -4,6 +4,7 @@ import signal
 import getopt
 import subprocess
 
+import json
 from datetime import datetime, timedelta
 import time
 
@@ -32,6 +33,7 @@ def usage():
     print(" --router_address:           address to ssh to. if this is not supplied we assume a wireshark capture")
     print("                                 is supplied to stdin. assumes that default ssh settings will work")
     print(" --ipinfo_token              token for accessing ipinfo.io. if this is not provided you may be rate limited")
+    print(" --config_file               path to json-formatted config file")
     print("")
 
 def clear_stdout_stderr():
@@ -43,8 +45,9 @@ def sigint_handler(signum, frame):
 signal.signal(signal.SIGINT, sigint_handler)
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], ["vha:m:o:"], ["address=", "debug", "sortmode=", "sortorder=", \
-                                                            "help", "verbose", "cachepath=","router_address=", \
+    opts, args = getopt.getopt(sys.argv[1:], ["vha:m:o:"], ["help", "config_file=", "debug", "verbose", \
+                                                            "address=", "sortmode=", "sortorder=", \
+                                                            "cachepath=","router_address=", \
                                                             "ipinfo_token="])
 except getopt.GetoptError:
     usage()
@@ -57,6 +60,7 @@ def main():
     sort_order = "descending"
     cache_path = ""
     router_address = ""
+    config_file_path = ""
 
     for o, a in opts:
         if o in ["--help", "-h"]:
@@ -86,6 +90,33 @@ def main():
             router_address = a
         elif o in ["--ipinfo_token"]:
             LibPeerFrom.Helpers.IPINFO_TOKEN = a
+        elif o in ["--config_file"]:
+            config_file_path = a
+
+    if config_file_path != "":
+        with open(config_file_path) as config_file:
+
+            config = json.load(config_file)
+            if "address" in config.keys():
+                local_up = config["address"]
+            if "sortmode" in config.keys():
+                if config["sortmode"] in ["first_seen","last_seen", "ip", "ping"]:
+                    sort_mode = config["sortmode"]
+            if "sortorder" in config.keys():
+                if config["sortorder"].startswith("asc"):
+                    sort_order = "ascending"
+                if config["sortorder"].startswith("desc"):
+                    sort_order = "descending"
+
+            if "router_address" in config.keys():
+                router_address = config["router_address"]
+            if "cachepath" in config.keys():
+                cache_path = config["cachepath"]
+            if "ipinfo_token" in config.keys():
+                LibPeerFrom.Helpers.IPINFO_TOKEN = config["ipinfo_token"]
+            
+
+    
 
     if local_ip == None:
         usage()

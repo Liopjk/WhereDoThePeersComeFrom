@@ -41,6 +41,12 @@ A host starts a session by using a relevant in-game item (Ember in DS3, Furlcall
 
 When summoning from a sign, the host's game contacts the matchmaking server to get the details of the guest's game. If the guest is able to be summoned (i.e. they are not already in a session, their game is still open, they did not move areas to a place that their summon sign disappears) then the host then makes a connection to the guest's game.
 
+Sometimes you will get an "unable to summon" message. There are a number of causes for this:
+
+1. Player has joined another session
+2. Player has entered non-MP area
+3. Player has blocked you
+
 
 ### Hosts - Summoning from Invasion
 
