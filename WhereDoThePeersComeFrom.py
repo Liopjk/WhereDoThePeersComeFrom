@@ -49,7 +49,8 @@ try:
                                                             "address=", "sortmode=", "sortorder=", \
                                                             "cachepath=","router_address=", \
                                                             "ipinfo_token="])
-except getopt.GetoptError:
+except getopt.GetoptError as e:
+    print(e)
     usage()
     exit()
 
@@ -74,6 +75,7 @@ def main():
             if a.lower() in ["first_seen","last_seen", "ip", "ping"]:
                 sort_mode = a.lower()
             else:
+                print("bad sortmode supplied")
                 usage()
                 exit()
         elif o in ["--sortorder", "-o"]:
@@ -82,6 +84,7 @@ def main():
             elif a.lower().startswith("desc"):
                 sort_order = "descending"
             else:
+                print("bad sortorder supplied")
                 usage()
                 exit()
         elif o in ["--cachepath"]:
@@ -98,7 +101,7 @@ def main():
 
             config = json.load(config_file)
             if "address" in config.keys():
-                local_up = config["address"]
+                local_ip = config["address"]
             if "sortmode" in config.keys():
                 if config["sortmode"] in ["first_seen","last_seen", "ip", "ping"]:
                     sort_mode = config["sortmode"]
@@ -119,6 +122,7 @@ def main():
     
 
     if local_ip == None:
+        print("no IP supplied")
         usage()
         exit()
         
