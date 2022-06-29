@@ -122,6 +122,9 @@ class Peers:
         if mode == "ip":
             self._storage.sort(reverse=not ascending, key= lambda p: p.remote_ip)
         if mode == "last_seen":
+            p: Peer
+            for p in self._storage:
+                p.last_seen.microsecond = 0
             self._storage.sort(reverse=not ascending, key= lambda p: p.last_seen)
 
     def cache_accurate_peers(self):

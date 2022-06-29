@@ -130,6 +130,7 @@ def main():
     peers = Peers(local_ip, sort_mode, sort_order, cache_path)
     print("local IP address: ",local_ip)
     last_maintenance_time = datetime.now()
+    last_print_time = last_maintenance_time
     peers.restore_cache()
     
     # Assume we're using stdin
@@ -146,6 +147,7 @@ def main():
             exit(1)
 
         pipecapture_source = ssh_process.stdout
+    
     
     
     packet: Packet
@@ -168,6 +170,20 @@ def main():
             # This means that accurate peers will have more entries in the cache
             if packet.sniff_time.minute % 10 == 0:
                 peers.cache_accurate_peers()
+        if (packet.sniff_time - last_print_time).total_seconds() >= 1:
+            headers = []
+            headers.append(("local ip address", local_ip))
+            headers.append(("last maintenance time", last_maintenance_time.time().strftime('%H:%M:%S')))
+            headers.append(("current time", current_time.time().strftime('%H:%M:%S')))
+            headers.append(("ping cache size", len(peers.ping_cache._storage)))
+            headers.append(("peers", len(peers)))
+
+            with open("/tmp/WhereDoThePeersComeFrom.html", 'w') as html_file:
+                html_file.seek(0)
+                written = html_file.write(LibPeerFrom.Helpers.generate_html_view(headers, peers))
+                html_file.truncate(written)
+                html_file.flush()
+                last_print_time = packet.sniff_time
             
         
         clear_stdout_stderr()
@@ -191,6 +207,7 @@ def main():
 
         # finally, we print
         print(peers)
+    html_file.close()
 
 
 if __name__ == "__main__": 

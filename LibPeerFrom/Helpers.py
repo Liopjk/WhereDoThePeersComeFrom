@@ -3,6 +3,7 @@ import sys
 import requests
 from enum import Enum
 
+
 class PingType(Enum):
     NA = 0          # We don't have a ping for this peer yet
     Guess = 1       # We're guessing, based off of packet timings
@@ -83,3 +84,77 @@ class GeoIP:
             return self.country
         else:
             return f"{self.region}, {self.country}"
+
+def generate_html_view(headers: list[tuple[str, str]], peers) -> str:
+    html =  "<!DOCTYPE html>" \
+            "\n<html>" \
+            "\n  <head>" \
+            "\n  <meta charset=\"utf8\">" \
+            "\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"> " \
+            "\n  <link rel=\"stylesheet\" href=\"./main.css\">"\
+            "\n  <script type = \"text/JavaScript\">" \
+            "\n    <!--" \
+            "\n      function AutoRefresh( t ) {"\
+            "\n        setTimeout(\"location.reload(true);\", t);"\
+            "\n      }"\
+            "\n    //-->" \
+            "\n  </script>" \
+            "\n    <title>" \
+            "WhereDoThePeersComeFrom?" \
+            "</title>" 
+    html += "\n  </head>"
+    html += "\n  <body onload = \"JavaScript:AutoRefresh(1000);\">" 
+
+    if headers is not None and len(headers) > 0:
+        header_table =  "\n<h1>Script Parameters</h1><br>" \
+                        "<div class=\"container\">" \
+                        "\n    <p><table>" \
+                        "<th></th>" \
+                        "\n     <tb>"
+        for h in headers:
+            header_table += \
+                "\n      <tr>" \
+                "\n        <td class=\"center_align\">" + f"{h[0]}" + "</td>" \
+                "\n        <td class=\"center_align\">" + f"{h[1]}" + "</td>" \
+                "\n      </tr>"
+        header_table += "\n    </tb></table></p></div>" 
+        html += header_table
+
+    
+    if peers is not None and len(peers) > 0:
+        peers_table =   "<h1>Peers</h1><br>" \
+                        "\n<div class=\"container\">"\
+                        "\n<p>" \
+                        "\n    <table>" \
+                        "\n    <th>"\
+                        "\n        <tr>"\
+                        "\n        <td class=\"center_align\">Remote IP</td>" \
+                        "\n        <td class=\"center_align\">Ping</td>" \
+                        "\n        <td class=\"center_align\">Ping Type</td>" \
+                        "\n        <td class=\"center_align\">Duration</td>" \
+                        "\n        <td class=\"center_align\">GeoIP</td>" \
+                        "\n        </tr>"\
+                        "\n    </th>"\
+                        "\n    <tb>"
+        for p in peers:
+            duration = p.last_seen - p.first_seen
+            peers_table += \
+                "\n      <tr>" \
+                "\n        <td class=\"center_align\"> " + f"{p.remote_ip}" + " </td>" \
+                "\n        <td class=\"center_align\"> " + f"{int(p.get_ping()):3} ms" + " </td>" \
+                "\n        <td class=\"center_align\"> " + f"{p.ping_type.name}" + " </td>" \
+                "\n        <td class=\"center_align\"> " \
+                    f"{int(duration.total_seconds()) // 60:02}:{int(duration.total_seconds()) % 60:02}. " \
+                " </td>" \
+                "\n        <td class=\"center_align\"> " + f"{p.geoip}" + " </td>" \
+                "\n      </tr>" 
+        peers_table += "\n    </tb></table></p></div>"     
+        html += peers_table
+            
+
+        
+    html +=  "\n  </body>"
+    html += "\n</html>"
+
+    return html
+    
