@@ -16,10 +16,12 @@ class Peer:
     times_seen: int
     ping: float
     geoip: GeoIP
+    friendly_name:str
 
 
     def __init__(self, local_ip: str, packet: pyshark.packet):
         if 'udp' not in packet: return None
+        self.friendly_name = ""
         self.ping_type = PingType.NA
         self.local_ip = local_ip
         self.packet_data_sent = set()
