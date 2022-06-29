@@ -34,6 +34,8 @@ def usage():
     print("                                 is supplied to stdin. assumes that default ssh settings will work")
     print(" --ipinfo_token              token for accessing ipinfo.io. if this is not provided you may be rate limited")
     print(" --config_file               path to json-formatted config file")
+    print(" --html_file                 path to a html file for outputting. should be in the same folder as main.css.")
+    print("                                 will be created if it does not exist")
     print("")
 
 def clear_stdout_stderr():
@@ -48,7 +50,7 @@ try:
     opts, args = getopt.getopt(sys.argv[1:], ["vha:m:o:"], ["help", "config_file=", "debug", "verbose", \
                                                             "address=", "sortmode=", "sortorder=", \
                                                             "cachepath=","router_address=", \
-                                                            "ipinfo_token="])
+                                                            "ipinfo_token=","html_file="])
 except getopt.GetoptError as e:
     print(e)
     usage()
@@ -62,6 +64,7 @@ def main():
     cache_path = ""
     router_address = ""
     config_file_path = ""
+    html_file = "/tmp/WhereDoThePeersComeFrom.html"
 
     for o, a in opts:
         if o in ["--help", "-h"]:
@@ -95,6 +98,8 @@ def main():
             LibPeerFrom.Helpers.IPINFO_TOKEN = a
         elif o in ["--config_file"]:
             config_file_path = a
+        elif o in ["--html_file"]:
+            html_file = a
 
     if config_file_path != "":
         with open(config_file_path) as config_file:
@@ -117,6 +122,8 @@ def main():
                 cache_path = config["cachepath"]
             if "ipinfo_token" in config.keys():
                 LibPeerFrom.Helpers.IPINFO_TOKEN = config["ipinfo_token"]
+            if "html_file" in config.keys():
+                html_file = config["html_file"]
             
 
     
@@ -178,11 +185,8 @@ def main():
             headers.append(("ping cache size", len(peers.ping_cache._storage)))
             headers.append(("peers", len(peers)))
 
-            with open("/tmp/WhereDoThePeersComeFrom.html", 'w') as html_file:
-                html_file.seek(0)
-                written = html_file.write(LibPeerFrom.Helpers.generate_html_view(headers, peers))
-                html_file.truncate(written)
-                html_file.flush()
+            with open(html_file, 'w') as html:
+                html.write(LibPeerFrom.Helpers.generate_html_view(headers, peers))
                 last_print_time = packet.sniff_time
             
         
