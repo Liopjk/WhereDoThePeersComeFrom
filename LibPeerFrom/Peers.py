@@ -124,7 +124,7 @@ class Peers:
         if mode == "last_seen":
             p: Peer
             for p in self._storage:
-                p.last_seen.microsecond = 0
+                p.last_seen = p.last_seen.replace(microsecond=0)
             self._storage.sort(reverse=not ascending, key= lambda p: p.last_seen)
 
     def cache_accurate_peers(self):
