@@ -107,7 +107,9 @@ class Peer:
         duration: timedelta = self.last_seen - self.first_seen
         s = ""
         try:
-            s = f"{self.remote_ip:15}: {int(self.get_ping()):3} ms " \
+            name = f"{self.remote_ip} "
+            if self.friendly_name != "": name = f"{self.friendly_name}"
+            s = f"{name:16}: {int(self.get_ping()):3} ms " \
                 f"{ping_type_display:12} " \
                 f"{packet_resent_perc[:4]}% loss. " \
                 f"duration {int(duration.total_seconds()) // 60:02}:{int(duration.total_seconds()) % 60:02}. " \

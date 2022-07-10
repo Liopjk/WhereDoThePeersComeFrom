@@ -114,42 +114,45 @@ def generate_html_view(headers: list[tuple[str, str]], peers) -> str:
         for h in headers:
             header_table += \
                 "\n      <tr>" \
-                "\n        <td class=\"center_align\">" + f"{h[0]}" + "</td>" \
-                "\n        <td class=\"center_align\">" + f"{h[1]}" + "</td>" \
+                "\n        <td class=\"left_align\">" + f" {h[0]} " + "</td>" \
+                "\n        <td class=\"right_align\">" + f" {h[1]} " + "</td>" \
                 "\n      </tr>"
         header_table += "\n    </tb></table></p></div>" 
         html += header_table
 
     
+    
+    peers_table =   "<h1>Peers</h1><br>" \
+                    "\n<div class=\"container\">"\
+                    "\n<p>" \
+                    "\n    <table>" \
+                    "\n    <th>"\
+                    "\n        <tr>"\
+                    "\n        <td class=\"center_align\">Remote IP</td>" \
+                    "\n        <td class=\"center_align\">Ping</td>" \
+                    "\n        <td class=\"center_align\">Ping Type</td>" \
+                    "\n        <td class=\"center_align\">Duration</td>" \
+                    "\n        <td class=\"center_align\">GeoIP</td>" \
+                    "\n        </tr>"\
+                    "\n    </th>"\
+                    "\n    <tb>"
     if peers is not None and len(peers) > 0:
-        peers_table =   "<h1>Peers</h1><br>" \
-                        "\n<div class=\"container\">"\
-                        "\n<p>" \
-                        "\n    <table>" \
-                        "\n    <th>"\
-                        "\n        <tr>"\
-                        "\n        <td class=\"center_align\">Remote IP</td>" \
-                        "\n        <td class=\"center_align\">Ping</td>" \
-                        "\n        <td class=\"center_align\">Ping Type</td>" \
-                        "\n        <td class=\"center_align\">Duration</td>" \
-                        "\n        <td class=\"center_align\">GeoIP</td>" \
-                        "\n        </tr>"\
-                        "\n    </th>"\
-                        "\n    <tb>"
         for p in peers:
             duration = p.last_seen - p.first_seen
+            if p.friendly_name != "": name = p.friendly_name
+            else: name = p.remote_ip
             peers_table += \
                 "\n      <tr>" \
-                "\n        <td class=\"center_align\"> " + f"{p.remote_ip}" + " </td>" \
-                "\n        <td class=\"center_align\"> " + f"{int(p.get_ping()):3} ms" + " </td>" \
-                "\n        <td class=\"center_align\"> " + f"{p.ping_type.name}" + " </td>" \
+                "\n        <td class=\"left_align\"> " + f" {name} " + " </td>" \
+                "\n        <td class=\"center_align\"> " + f" {int(p.get_ping()):3} ms " + " </td>" \
+                "\n        <td class=\"center_align\"> " + f" {p.ping_type.name} " + " </td>" \
                 "\n        <td class=\"center_align\"> " \
-                    f"{int(duration.total_seconds()) // 60:02}:{int(duration.total_seconds()) % 60:02}. " \
+                    f" {int(duration.total_seconds()) // 60:02}:{int(duration.total_seconds()) % 60:02} " \
                 " </td>" \
-                "\n        <td class=\"center_align\"> " + f"{p.geoip}" + " </td>" \
+                "\n        <td class=\"left_align\"> " + f" {p.geoip} " + " </td>" \
                 "\n      </tr>" 
         peers_table += "\n    </tb></table></p></div>"     
-        html += peers_table
+    html += peers_table
             
 
         
