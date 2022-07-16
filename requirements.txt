@@ -2,4 +2,3 @@ pyshark
 ping3
 datetime
 requests
-getopt
