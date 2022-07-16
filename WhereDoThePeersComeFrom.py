@@ -36,7 +36,9 @@ def usage():
     print(" --config_file               path to json-formatted config file")
     print(" --friendlyname_file         path to json-formatted map from ip to friendlyname")
     print(" --html_file                 path to a html file for outputting. should be in the same folder as main.css.")
-    print("                                 will be created if it does not exist")
+    print("                                 will be created if it does not exist. no output if unspecified.")
+    print(" --peers_json_file           path to a json file for outputting peer status. will be created if it does not exist.")
+    print("                                 no output if unspecified.")
     print("")
 
 def clear_stdout_stderr():
@@ -51,7 +53,7 @@ try:
     opts, args = getopt.getopt(sys.argv[1:], ["vha:m:o:"], ["help", "config_file=", "debug", "verbose", \
                                                             "address=", "sortmode=", "sortorder=", \
                                                             "cachepath=","router_address=", \
-                                                            "ipinfo_token=","html_file=","friendlyname_file="])
+                                                            "ipinfo_token=","html_file=","friendlyname_file=","peers_json_file="])
 except getopt.GetoptError as e:
     print(e)
     usage()
@@ -66,7 +68,8 @@ def main():
     router_address = ""
     config_file_path = ""
     friendlyname_file_path = ""
-    html_file = "/tmp/WhereDoThePeersComeFrom.html"
+    html_file = ""
+    peers_json_file = "/tmp/WhereDoThePeersComeFrom.html"
 
     for o, a in opts:
         if o in ["--help", "-h"]:
@@ -104,6 +107,8 @@ def main():
             html_file = a
         elif o in ["--friendlyname_file"]:
             friendlyname_file_path = a
+        elif o in ["--peers_json_file"]:
+            peers_json_file = a
 
     if config_file_path != "":
         with open(config_file_path) as config_file:
@@ -119,7 +124,6 @@ def main():
                     sort_order = "ascending"
                 if config["sortorder"].startswith("desc"):
                     sort_order = "descending"
-
             if "router_address" in config.keys():
                 router_address = config["router_address"]
             if "cachepath" in config.keys():
@@ -134,16 +138,14 @@ def main():
                 DEBUG = True
             if "friendlyname_file" in config.keys():
                 friendlyname_file_path = config["friendlyname_file"]
+            if "peers_json_file" in config.keys():
+                peers_json_file = config["peers_json_file"]
             
-
-    
-
     if local_ip == None:
         print("no IP supplied")
         usage()
         exit()
         
-
     peers = Peers(local_ip, sort_mode, sort_order, cache_path)
     print("local IP address: ",local_ip)
     last_maintenance_time = datetime.now()
@@ -156,17 +158,13 @@ def main():
     if router_address != "":
         ssh_command = f"/usr/sbin/tcpdump host {local_ip} -U -w - "
         ssh_process = subprocess.Popen(["ssh", router_address, ssh_command], stdout=subprocess.PIPE)
-        
         time.sleep(2)
         if ssh_process.poll() is not None:    
             print("error: ssh session has closed")
             print(ssh_process.stderr)
             exit(1)
-
         pipecapture_source = ssh_process.stdout
-    
-    
-    
+      
     packet: Packet
     for packet in PipeCapture(pipecapture_source):
         current_time = datetime.now()
@@ -207,10 +205,24 @@ def main():
             headers.append(("current time", current_time.time().strftime('%H:%M:%S')))
             headers.append(("ping cache size", len(peers.ping_cache._storage)))
             headers.append(("peers", len(peers)))
+            if html_file != "":
+                with open(html_file, 'w') as html:
+                    html.write(LibPeerFrom.Helpers.generate_html_view(headers, peers))     
+            if peers_json_file != "":
+                with open(peers_json_file, 'w') as j:
+                    json_output = dict()
+                    json_output["peers"] = peers.to_dict()
+                    json_output["statistics"] = {
+                                                "local_ip_address": local_ip,
+                                                "last_maintenance_time": last_maintenance_time.time().strftime('%H:%M:%S'),
+                                                "current_time": current_time.time().strftime('%H:%M:%S'),
+                                                "ping_cache_size": len(peers.ping_cache._storage),
+                                                "peers":len(peers)
+                                                }
 
-            with open(html_file, 'w') as html:
-                html.write(LibPeerFrom.Helpers.generate_html_view(headers, peers))
-                last_print_time = packet.sniff_time
+                    json.dump(json_output, j, indent=4)
+
+            last_print_time = packet.sniff_time
             
         
         clear_stdout_stderr()

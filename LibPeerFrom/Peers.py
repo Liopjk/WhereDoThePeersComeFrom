@@ -143,10 +143,15 @@ class Peers:
 
     def __contains__(self, peer:Peer) -> bool:
         return peer.remote_ip in self._index
-
     
     def __len__(self) -> int:
         return len(self.get_index())
 
     def __str__(self) -> str:
         return "\n".join([str(p) for p in self._storage if p.times_seen > 2])
+
+    def to_dict(self) -> dict:
+        peers_dict = dict()
+        for p in self:
+            peers_dict[p.remote_ip] = p.to_dict()
+        return peers_dict

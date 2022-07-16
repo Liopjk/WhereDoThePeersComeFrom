@@ -42,8 +42,7 @@ class Peer:
         self.times_seen = 1
         self.ping = -1
         self.geoip = None
-
-    
+   
     def just_seen(self, packet: pyshark.packet) -> int:
         if 'udp' not in packet: return None
         if self.geoip == None: self.geoip = GeoIP(self.remote_ip)
@@ -118,3 +117,16 @@ class Peer:
             pass
 
         return s
+
+    def to_dict(self) -> dict:
+        duration = self.last_seen - self.first_seen
+        peer_dict = dict()
+        peer_dict["ping_type"] = str(self.ping_type)
+        peer_dict["remote_ip"] = self.remote_ip
+        peer_dict["ping"] = self.ping
+        peer_dict["first_seen"] = self.first_seen.time().strftime('%H:%M:%S')
+        peer_dict["last_seen"] = self.last_seen.time().strftime('%H:%M:%S')
+        peer_dict["geoip"] = str(self.geoip)
+        peer_dict["friendly_name"] = self.friendly_name
+        peer_dict["duration"] = f" {int(duration.total_seconds()) // 60:02}:{int(duration.total_seconds()) % 60:02} "
+        return peer_dict
