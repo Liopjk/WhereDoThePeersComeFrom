@@ -121,9 +121,9 @@ class Peer:
     def to_dict(self) -> dict:
         duration = self.last_seen - self.first_seen
         peer_dict = dict()
-        peer_dict["ping_type"] = str(self.ping_type)
+        peer_dict["ping_type"] = str(self.ping_type).replace("PingType.","")
         peer_dict["remote_ip"] = self.remote_ip
-        peer_dict["ping"] = self.ping
+        peer_dict["ping"] = int(self.ping)
         peer_dict["first_seen"] = self.first_seen.time().strftime('%H:%M:%S')
         peer_dict["last_seen"] = self.last_seen.time().strftime('%H:%M:%S')
         peer_dict["geoip"] = str(self.geoip)
