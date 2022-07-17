@@ -246,7 +246,7 @@ def main():
 
         # finally, we print
         print(peers)
-    html_file.close()
+    
 
 
 if __name__ == "__main__": 
