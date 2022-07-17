@@ -49,12 +49,14 @@ class Peers:
 
     def add_peer_from_packet(self, packet: packet) -> None:
         peer = Peer(self.local_ip, packet)
+        print("adding peer", peer.remote_ip)
         if self.peer_known(peer):
             self[peer.remote_ip].just_seen(packet)  
         else:
             # packet['data'].data is a string, it has double the length of the actual data
             # as it uses two chars to represent each byte
             # we consider 94 byte packets to be the start of a session
+            print("peer was not known", peer.remote_ip)
             if 'data' in packet and len(packet['data'].data) == 94*2:
                 peer.estimate_geoip()
                 if "amazon" not in peer.geoip.org.lower():
