@@ -199,14 +199,15 @@ def main():
             if packet.sniff_time.minute % 10 == 0:
                 peers.cache_accurate_peers()
         if (packet.sniff_time - last_print_time).total_seconds() >= 1:
-            headers = []
-            headers.append(("local ip address", local_ip))
-            headers.append(("last maintenance time", last_maintenance_time.time().strftime('%H:%M:%S')))
-            headers.append(("current time", current_time.time().strftime('%H:%M:%S')))
-            headers.append(("ping cache size", len(peers.ping_cache._storage)))
-            headers.append(("peers", len(peers)))
+            
             if html_file != "":
                 with open(html_file, 'w') as html:
+                    headers = []
+                    headers.append(("local ip address", local_ip))
+                    headers.append(("last maintenance time", last_maintenance_time.time().strftime('%H:%M:%S')))
+                    headers.append(("current time", current_time.time().strftime('%H:%M:%S')))
+                    headers.append(("ping cache size", len(peers.ping_cache._storage)))
+                    headers.append(("peers", len(peers)))
                     html.write(LibPeerFrom.Helpers.generate_html_view(headers, peers))     
             if peers_json_file != "":
                 with open(peers_json_file, 'w') as j:
