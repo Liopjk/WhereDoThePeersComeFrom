@@ -64,7 +64,7 @@ class Peers:
                 peer.estimate_geoip()
                 if "amazon" not in peer.geoip.org.lower():
                     self.add_peer(peer)  
-                    return True
+                    return peer
 
             
 
