@@ -45,7 +45,7 @@ class Peer:
    
     def just_seen(self, packet: pyshark.packet) -> int:
         if 'udp' not in packet: return None
-        if self.geoip == None: self.geoip = GeoIP(self.remote_ip)
+        self.estimate_geoip()
         if packet['ip'].src == self.local_ip:
             self.packets_sent += 1
             if 'data' in packet:
@@ -87,15 +87,20 @@ class Peer:
                 self.ping = total_ping / ping_count
         return self.ping
             
-    def estimate_geoip(self):
+    def estimate_geoip(self) -> GeoIP:
         if self.geoip is None:
             self.geoip = GeoIP(self.remote_ip)
+        return self.geoip
 
     def has_accurate_ping(self) -> bool:
         return self.ping_type == PingType.Accurate
 
     def get_ping(self) -> float:
         return self.ping
+
+    def get_name(self) -> str:
+        if self.friendly_name != "": return self.friendly_name
+        return str(self.remote_ip)
     
     def __str__(self):        
         try:
@@ -106,9 +111,7 @@ class Peer:
         duration: timedelta = self.last_seen - self.first_seen
         s = ""
         try:
-            name = f"{self.remote_ip} "
-            if self.friendly_name != "": name = f"{self.friendly_name}"
-            s = f"{name:16}: {int(self.get_ping()):3} ms " \
+            s = f"{self.get_name():16}: {int(self.get_ping()):3} ms " \
                 f"{ping_type_display:12} " \
                 f"{packet_resent_perc[:4]}% loss. " \
                 f"duration {int(duration.total_seconds()) // 60:02}:{int(duration.total_seconds()) % 60:02}. " \

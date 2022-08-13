@@ -39,6 +39,7 @@ def usage():
     print("                                 will be created if it does not exist. no output if unspecified.")
     print(" --peers_json_file           path to a json file for outputting peer status. will be created if it does not exist.")
     print("                                 no output if unspecified.")
+    print(" --no_tui                    don't print the terminal ui")
     print("")
 
 def clear_stdout_stderr():
@@ -50,7 +51,7 @@ def sigint_handler(signum, frame):
 signal.signal(signal.SIGINT, sigint_handler)
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], ["vha:m:o:"], ["help", "config_file=", "debug", "verbose", \
+    opts, args = getopt.getopt(sys.argv[1:], ["vha:m:o:"], ["help", "no_tui", "config_file=", "debug", "verbose", \
                                                             "address=", "sortmode=", "sortorder=", \
                                                             "cachepath=","router_address=", \
                                                             "ipinfo_token=","html_file=","friendlyname_file=","peers_json_file="])
@@ -70,6 +71,7 @@ def main():
     friendlyname_file_path = ""
     html_file = ""
     peers_json_file = "/tmp/WhereDoThePeersComeFrom.html"
+    show_tui = True
 
     for o, a in opts:
         if o in ["--help", "-h"]:
@@ -109,6 +111,8 @@ def main():
             friendlyname_file_path = a
         elif o in ["--peers_json_file"]:
             peers_json_file = a
+        elif o in ["--no_tui"]:
+            show_tui = False
 
     if config_file_path != "":
         with open(config_file_path) as config_file:
@@ -148,6 +152,7 @@ def main():
         
     peers = Peers(local_ip, sort_mode, sort_order, cache_path)
     print("local IP address: ",local_ip)
+    sys.stdout.flush()
     last_maintenance_time = datetime.now()
     last_print_time = last_maintenance_time
     peers.restore_cache()
@@ -162,6 +167,7 @@ def main():
         if ssh_process.poll() is not None:    
             print("error: ssh session has closed")
             print(ssh_process.stderr)
+            sys.stdout.flush()
             exit(1)
         pipecapture_source = ssh_process.stdout
       
@@ -169,10 +175,14 @@ def main():
     for packet in PipeCapture(pipecapture_source):
         current_time = datetime.now()
         if 'ip' in packet and 'udp' in packet:
-            peers.add_peer_from_packet(packet)
+            p = peers.add_peer_from_packet(packet)
+            if p is not None and not show_tui:
+                print(f"{packet.sniff_time}: peer {p.get_name()} added ({p.estimate_geoip()})")
+                sys.stdout.flush()
 
         if (packet.sniff_time - last_maintenance_time).total_seconds() > 20:
             print("running maintenance")
+            sys.stdout.flush()
             # remove all peers that haven't been seen in the last 30s
             peers.remove_stale_peers(packet.sniff_time - timedelta(seconds=30))
             peers.ping_peers()
@@ -225,28 +235,29 @@ def main():
 
             last_print_time = packet.sniff_time
             
-        
-        clear_stdout_stderr()
-        print(f"local ip address:       {local_ip}")
+        if show_tui:
+            clear_stdout_stderr()
+            print(f"local ip address:       {local_ip}")
 
-        if DEBUG:
-            if current_time > packet.sniff_time:
-                scan_delay = current_time - packet.sniff_time
-            else:
-                scan_delay = packet.sniff_time - current_time 
-            print(f"last maintenance time:  {last_maintenance_time.time().strftime('%H:%M:%S')}")
-            #print(f"last packet sniff time: {packet.sniff_time.time().strftime('%H:%M:%S')}")
-            print(f"current time:           {current_time.time().strftime('%H:%M:%S')}")
-            print(f"scan delay:             {scan_delay}")
-            print(f"ping cache location:    {cache_path}")
-            print(f"ping cache size:        {len(peers.ping_cache._storage)}")
-            #print(f"ping cache hit count:   {peers.ping_cache.hit_count}")
-        
-        print(f"peer(s):                {len(peers)}")
-        print()
+            if DEBUG:
+                if current_time > packet.sniff_time:
+                    scan_delay = current_time - packet.sniff_time
+                else:
+                    scan_delay = packet.sniff_time - current_time 
+                print(f"last maintenance time:  {last_maintenance_time.time().strftime('%H:%M:%S')}")
+                #print(f"last packet sniff time: {packet.sniff_time.time().strftime('%H:%M:%S')}")
+                print(f"current time:           {current_time.time().strftime('%H:%M:%S')}")
+                print(f"scan delay:             {scan_delay}")
+                print(f"ping cache location:    {cache_path}")
+                print(f"ping cache size:        {len(peers.ping_cache._storage)}")
+                #print(f"ping cache hit count:   {peers.ping_cache.hit_count}")
+            
+            print(f"peer(s):                {len(peers)}")
+            print()
 
-        # finally, we print
-        print(peers)
+            # finally, we print
+            print(peers)
+            sys.stdout.flush()
     
 
 

@@ -56,7 +56,7 @@ class PingCache:
         return not self._fileName == ""
     
     def add_peer(self, peer:Peer):
-        if peer.ping_type in [PingType.Accurate, PingType.Guess]:
+        if peer.ping_type in [PingType.Accurate]:
             if peer.geoip.city is None: return
             if peer.geoip.region is None: return
             if peer.geoip.country is None: return

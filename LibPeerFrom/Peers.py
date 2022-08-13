@@ -3,6 +3,7 @@ from LibPeerFrom.PingCache import PingCache, PingCacheEstimate, PingAccuracy
 from LibPeerFrom.Helpers import PingType
 from pyshark import packet
 from datetime import datetime, timedelta
+from typing import Union
 
 
 class Peers:
@@ -48,10 +49,12 @@ class Peers:
             self._index = {p.remote_ip for p in self._storage}
             self.sort_peers()
 
-    def add_peer_from_packet(self, packet: packet) -> None:
+    # returns a peer if it was added, None if no peer was added
+    def add_peer_from_packet(self, packet: packet) -> Union[None,Peer]:
         peer = Peer(self.local_ip, packet)
         if self.peer_known(peer):
             self[peer.remote_ip].just_seen(packet)  
+            return None
         else:
             # packet['data'].data is a string, it has double the length of the actual data
             # as it uses two chars to represent each byte
@@ -61,6 +64,7 @@ class Peers:
                 peer.estimate_geoip()
                 if "amazon" not in peer.geoip.org.lower():
                     self.add_peer(peer)  
+                    return True
 
             
 
