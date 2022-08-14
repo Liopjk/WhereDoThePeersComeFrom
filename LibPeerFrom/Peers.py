@@ -28,11 +28,14 @@ class Peers:
     def is_private_ip(self, addr: str) -> bool:
         addr = addr.split(".")
         addr = [int(s) for s in addr]
+        # 10.0.0.0/8
         if addr[0] == 10: 
             return True
+        # 172.16.0.0/12
         if addr[0] == 172:
             if addr[1] >= 16 and addr[1] < 32:
                 return True
+        # 192.168.0.0/16
         if addr[0] == 192 and addr[1] == 168:
             return True
         return False
@@ -53,6 +56,8 @@ class Peers:
     # returns a peer if it was added, None if no peer was added
     def add_peer_from_packet(self, packet: packet) -> Union[None,Peer]:
         peer = Peer(self.local_ip, packet)
+        if self.is_private_ip(peer.remote_ip):
+            return None
         if self.peer_known(peer):
             self[peer.remote_ip].just_seen(packet)  
             return None
