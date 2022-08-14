@@ -62,6 +62,7 @@ class GeoIP:
         except Exception as e:
             print(f"Error parsing geoip response. Requested {resp.url()} for IP {self.ip_addr}. Response:")
             print(resp.text)
+            sys.stdout.flush()
             raise e
         
         self.region = ""
