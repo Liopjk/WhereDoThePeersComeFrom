@@ -57,7 +57,12 @@ class GeoIP:
         
         self.ip_addr = ip_addr
         resp = requests.get(f"https://ipinfo.io/{ip_addr}/json{token}")
-        data = resp.json()
+        try:
+            data = resp.json()
+        except Exception as e:
+            print(f"Error parsing geoip response. Requested {resp.url()} for IP {self.ip_addr}. Response:")
+            print(resp.text)
+            raise e
         
         self.region = ""
         self.country = ""

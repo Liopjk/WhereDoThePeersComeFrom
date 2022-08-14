@@ -4,6 +4,7 @@ from LibPeerFrom.Helpers import PingType
 from pyshark import packet
 from datetime import datetime, timedelta
 from typing import Union
+import sys
 
 
 class Peers:
@@ -61,7 +62,12 @@ class Peers:
             # we consider 94 byte packets to be the start of a session
             # udp payload is 281 for 94 bytes based on wireshark trace
             if len(packet['udp'].payload) == 281: 
-                peer.estimate_geoip()
+                try:
+                    peer.estimate_geoip()
+                except:
+                    print("Error getting geoip for",peer.get_name())
+                    sys.stdout.flush()
+                    return None
                 if "amazon" not in peer.geoip.org.lower():
                     self.add_peer(peer)  
                     return peer
