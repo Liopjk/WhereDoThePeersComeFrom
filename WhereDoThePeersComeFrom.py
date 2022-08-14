@@ -181,28 +181,29 @@ def main():
                 sys.stdout.flush()
 
         if (packet.sniff_time - last_maintenance_time).total_seconds() > 20:
-            print("running maintenance")
-            sys.stdout.flush()
-            # remove all peers that haven't been seen in the last 30s
-            peers.remove_stale_peers(packet.sniff_time - timedelta(seconds=30))
-            peers.ping_peers()
-            peers.ping_cache.apply_minimum_pings()
-            peers.estimate_guess_peers()
-            peers.persist_cache()
-            if friendlyname_file_path != "":
-                with open(friendlyname_file_path, 'r+') as friendlyname_file:
-                    friendlynames: dict[str,str] = {k:v for k,v in json.load(friendlyname_file).items() if v != ""}
+            if len(peers) > 0:
+                print("running maintenance")
+                sys.stdout.flush()
+                # remove all peers that haven't been seen in the last 30s
+                peers.remove_stale_peers(packet.sniff_time - timedelta(seconds=30))
+                peers.ping_peers()
+                peers.ping_cache.apply_minimum_pings()
+                peers.estimate_guess_peers()
+                peers.persist_cache()
+                if friendlyname_file_path != "":
+                    with open(friendlyname_file_path, 'r+') as friendlyname_file:
+                        friendlynames: dict[str,str] = {k:v for k,v in json.load(friendlyname_file).items() if v != ""}
 
-                    p: Peer
-                    for p in peers._storage:
-                        if p.remote_ip in friendlynames.keys():
-                            p.friendly_name = friendlynames[p.remote_ip]
-                        else:
-                            friendlynames[p.remote_ip] = ""
-                    friendlyname_file.seek(0)
-                    json.dump(friendlynames, friendlyname_file, sort_keys=True, indent=4)
-                    friendlyname_file.truncate()
-            last_maintenance_time = current_time
+                        p: Peer
+                        for p in peers._storage:
+                            if p.remote_ip in friendlynames.keys():
+                                p.friendly_name = friendlynames[p.remote_ip]
+                            else:
+                                friendlynames[p.remote_ip] = ""
+                        friendlyname_file.seek(0)
+                        json.dump(friendlynames, friendlyname_file, sort_keys=True, indent=4)
+                        friendlyname_file.truncate()
+                last_maintenance_time = current_time
 
             # Cache all our accurate peers every 10 minutes
             # This means that accurate peers will have more entries in the cache
