@@ -180,8 +180,14 @@ def main():
                 print(f"{packet.sniff_time}: peer {p.get_name()} added ({p.estimate_geoip()})")
                 sys.stdout.flush()
 
-        if (packet.sniff_time - last_maintenance_time).total_seconds() > 20:
-            if len(peers) > 0:
+        time_since_last_maint = packet.sniff_time - last_maintenance_time
+        if (time_since_last_maint).total_seconds() > 20:
+            # Run maintenance every 20 seconds
+            #   - unless there's no peers
+            #   - except if it's been > 10 minutes and the minute is in {0,10,20,30,40,50,60}
+            if len(peers) > 0 \
+            or (    time_since_last_maint.total_seconds() > 600
+                and packet.sniff_time.minute % 10 == 0):
                 print("running maintenance")
                 sys.stdout.flush()
                 # remove all peers that haven't been seen in the last 30s

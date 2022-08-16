@@ -3,7 +3,7 @@ from LibPeerFrom.PingCache import PingCache, PingCacheEstimate, PingAccuracy
 from LibPeerFrom.Helpers import PingType
 from pyshark import packet
 from datetime import datetime, timedelta
-from typing import Union
+from typing import Union, Iterator
 import sys
 
 
@@ -160,7 +160,7 @@ class Peers:
         for p in self._storage:
             if p.remote_ip == key: return p
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Peer]:
         return self._storage.__iter__()
 
     def __contains__(self, peer:Peer) -> bool:
