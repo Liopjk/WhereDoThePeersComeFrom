@@ -57,8 +57,8 @@ class Peers:
         # 192.168.0.0/16
         if addr[0] == 192 and addr[1] == 168:
             return True
-        # 192.18.0.0/15
-        if addr[0] == 192 and addr[1] >= 18 and addr[2] <= 19:
+        # 198.18.0.0/15
+        if addr[0] == 198 and addr[1] >= 18 and addr[2] <= 19:
             return True
 
 
