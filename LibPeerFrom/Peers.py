@@ -123,12 +123,6 @@ class Peers:
             if p.last_seen < timestamp:
                 self.remove_peer(p)
                 continue
-            # If we've been in contact for more than 5 minutes but haven't resent anything, remove this peer
-            # It's probably a matchmaking server
-            if  p.last_seen - p.first_seen > timedelta(minutes=5) \
-            and p.packets_resent == 0:
-                self._storage.remove(p)
-                continue
         self._index = { p.remote_ip for p in self._storage }
         self.sort_peers(ascending=False)
 
