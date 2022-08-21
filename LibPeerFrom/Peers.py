@@ -28,16 +28,42 @@ class Peers:
     def is_private_ip(self, addr: str) -> bool:
         addr = addr.split(".")
         addr = [int(s) for s in addr]
+        # 0.0.0.0/8
+        if addr[0] == 0: return True
         # 10.0.0.0/8
-        if addr[0] == 10: 
+        if addr[0] == 10: return True
+        # 100.64.0.0/10
+        if addr[0] == 100 \
+            and addr[2] >= 64 and addr[2] <= 127:
+            return True
+        # 127.0.0.0/8
+        if addr[0] == 127: return True
+        # 169.254.0.0/16
+        if addr[0] == 169 and addr[1] == 254:
             return True
         # 172.16.0.0/12
-        if addr[0] == 172:
-            if addr[1] >= 16 and addr[1] < 32:
+        if addr[0] == 172 and \
+            addr[1] >= 16 and addr[1] <= 31:
                 return True
+        # 192.0.0.0/24
+        if addr[0] == 192 and addr[1] == 0 and addr[2] == 0:
+            return True
+        # 192.0.2.0/24
+        if addr[0] == 192 and addr[1] == 0 and addr[2] == 2:
+            return True
+        # 192.88.99.0/24
+        if addr[0] == 192 and addr[1] == 88 and addr[2] == 99:
+            return True
         # 192.168.0.0/16
         if addr[0] == 192 and addr[1] == 168:
             return True
+        # 192.18.0.0/15
+        if addr[0] == 192 and addr[1] >= 18 and addr[2] <= 19:
+            return True
+
+
+
+
         return False
 
     def restore_cache(self) -> None:
