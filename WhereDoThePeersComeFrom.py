@@ -173,43 +173,50 @@ def main():
       
     packet: Packet
     for packet in PipeCapture(pipecapture_source):
+        should_run_maint = False
         current_time = datetime.now()
         if 'ip' in packet and 'udp' in packet:
             p = peers.add_peer_from_packet(packet)
+            # run maintenance as soon as we add a peer
+            # this will update the friendlynames.json file
+            if p is not None: should_run_maintenance = True
             if p is not None and not show_tui:
                 print(f"{packet.sniff_time}: peer {p.get_name()} added ({p.estimate_geoip()})")
                 sys.stdout.flush()
 
+        
+        # run maintenance every 20 seconds, as long as there's peers
         time_since_last_maint = packet.sniff_time - last_maintenance_time
-        if (time_since_last_maint).total_seconds() > 20:
-            # Run maintenance every 20 seconds
-            #   - unless there's no peers
-            #   - except if it's been > 10 minutes and the minute is in {0,10,20,30,40,50,60}
-            if len(peers) > 0 \
-            or (    time_since_last_maint.total_seconds() > 600
-                and packet.sniff_time.minute % 10 == 0):
-                print("running maintenance")
-                sys.stdout.flush()
-                # remove all peers that haven't been seen in the last 30s
-                peers.remove_stale_peers(packet.sniff_time - timedelta(seconds=30))
-                peers.ping_peers()
-                peers.ping_cache.apply_minimum_pings()
-                peers.estimate_guess_peers()
-                peers.persist_cache()
-                if friendlyname_file_path != "":
-                    with open(friendlyname_file_path, 'r+') as friendlyname_file:
-                        friendlynames: dict[str,str] = {k:v for k,v in json.load(friendlyname_file).items() if v != ""}
-
-                        p: Peer
-                        for p in peers._storage:
-                            if p.remote_ip in friendlynames.keys():
-                                p.friendly_name = friendlynames[p.remote_ip]
-                            else:
-                                friendlynames[p.remote_ip] = ""
-                        friendlyname_file.seek(0)
-                        json.dump(friendlynames, friendlyname_file, sort_keys=True, indent=4)
-                        friendlyname_file.truncate()
-                last_maintenance_time = current_time
+        if (time_since_last_maint).total_seconds() > 20 and len(peers) > 0:
+            should_run_maintenance = True
+        # run maintenance every 10 minutes if there's no peers
+        # in minute {0,10,20,30,40,50}
+        if ( time_since_last_maint.total_seconds() > 600) \
+            and packet.sniff_time.minute % 10 == 0:
+            should_run_maintenance = True
+        
+        if should_run_maintenance:
+            print("running maintenance")
+            sys.stdout.flush()
+            # remove all peers that haven't been seen in the last 30s
+            peers.remove_stale_peers(packet.sniff_time - timedelta(seconds=30))
+            peers.ping_peers()
+            peers.ping_cache.apply_minimum_pings()
+            peers.estimate_guess_peers()
+            peers.persist_cache()
+            if friendlyname_file_path != "":
+                with open(friendlyname_file_path, 'r+') as friendlyname_file:
+                    friendlynames: dict[str,str] = {k:v for k,v in json.load(friendlyname_file).items() if v != ""}
+                    p: Peer
+                    for p in peers._storage:
+                        if p.remote_ip in friendlynames.keys():
+                            p.friendly_name = friendlynames[p.remote_ip]
+                        else:
+                            friendlynames[p.remote_ip] = ""
+                    friendlyname_file.seek(0)
+                    json.dump(friendlynames, friendlyname_file, sort_keys=True, indent=4)
+                    friendlyname_file.truncate()
+            last_maintenance_time = current_time
 
             # Cache all our accurate peers every 10 minutes
             # This means that accurate peers will have more entries in the cache
