@@ -173,7 +173,7 @@ def main():
       
     packet: Packet
     for packet in PipeCapture(pipecapture_source):
-        should_run_maint = False
+        should_run_maintenance = False
         current_time = datetime.now()
         if 'ip' in packet and 'udp' in packet:
             p = peers.add_peer_from_packet(packet)
