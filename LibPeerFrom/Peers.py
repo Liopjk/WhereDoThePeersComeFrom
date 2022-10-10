@@ -64,12 +64,7 @@ class Peers:
                 if "amazon" not in peer.geoip.org.lower():
                     self.add_peer(peer)  
                     return peer
-
-            
-
-            
-                
-
+      
     def estimate_guess_peers(self) -> None:
         peer: Peer
         for peer in [p for p in self._storage if p.ping_type == PingType.Guess]:
@@ -79,7 +74,13 @@ class Peers:
             and est.Estimate.Mean > 0:
                 self.ping_cache.add_peer(peer)
                 self[peer.remote_ip].ping = est.Estimate.Mean
-                self[peer.remote_ip].ping_type = PingType.Estimate           
+                self[peer.remote_ip].ping_type = PingType.Estimate
+                if est.Accuracy == PingAccuracy.Country:
+                    self[peer.remote_ip].ping_type = PingType.EstimateCountry
+                if est.Accuracy == PingAccuracy.Region:
+                    self[peer.remote_ip].ping_type = PingType.EstimateRegion
+                if est.Accuracy == PingAccuracy.City:
+                    self[peer.remote_ip].ping_type = PingType.City
 
     def peer_known_from_packet(self, packet:packet) -> bool:
         if 'udp' not in packet: return False

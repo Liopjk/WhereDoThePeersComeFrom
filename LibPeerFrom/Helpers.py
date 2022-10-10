@@ -9,6 +9,9 @@ class PingType(Enum):
     Guess = 1       # We're guessing, based off of packet timings
     Estimate = 2    # We're guessing based off of some sort of geoip thing
     Accurate = 3    # We have an ICMP latency
+    EstimateCountry = 4
+    EstimateRegion = 5
+    EstimateCity = 6
 
 this_module = sys.modules[__name__]
 global IPINFO_TOKEN
