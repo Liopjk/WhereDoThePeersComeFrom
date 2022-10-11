@@ -80,7 +80,7 @@ class Peers:
                 if est.Accuracy == PingAccuracy.Region:
                     self[peer.remote_ip].ping_type = PingType.EstimateRegion
                 if est.Accuracy == PingAccuracy.City:
-                    self[peer.remote_ip].ping_type = PingType.City
+                    self[peer.remote_ip].ping_type = PingType.EstimateCity
 
     def peer_known_from_packet(self, packet:packet) -> bool:
         if 'udp' not in packet: return False
